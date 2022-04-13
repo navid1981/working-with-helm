@@ -1,0 +1,57 @@
+#Version 1
+kubectl apply -n ns-dev -f frontend.yaml
+kubectl apply -n ns-dev -f frontend-service.yaml
+
+#Version 2
+#frontend
+kubectl apply -n ns-dev -f frontend-configmap.yaml
+kubectl apply -n ns-dev -f frontend.yaml
+
+#backend
+kubectl apply -n ns-dev -f backend-secret.yaml
+kubectl apply -n ns-dev -f backend.yaml
+kubectl apply -n ns-dev -f backend-service.yaml
+kubectl apply -n ns-dev -f backend-service.yaml
+
+#mongodb
+kubectl apply -n ns-dev -f mongodb-secret.yaml
+kubectl apply -n ns-dev -f mongodb-persistent-volume.yaml
+kubectl apply -n ns-dev -f mongodb-persistent-volume-claim.yaml
+kubectl apply -n ns-dev -f mongodb.yaml
+kubectl apply -n ns-dev -f mongodb-service.yaml
+
+#Remove the above resources
+kubectl delete deploy -n ns-dev backend
+kubectl delete deploy -n ns-dev frontend
+kubectl delete deploy -n ns-dev mongodb
+kubectl delete svc -n ns-dev backend
+kubectl delete svc -n ns-dev frontend
+kubectl delete svc -n ns-dev mongodb
+
+#Version 5
+cd ..
+cd ..
+helm install -n ns-dev demo-helm guestbook #release + chart
+#Update the app version to 1.1 in the charet.yaml
+#Update the image version to 1.1 in frontend.yaml
+helm upgrade -n ns-dev demo-helm guestbook
+
+#Check Helm Revision
+helm status demo-helm -n ns-dev
+
+# !!!!! Bug in the System !!!
+# Rollback
+helm rollback -n ns-dev demo-helm 1
+
+# Lets check out the history
+helm history -n ns-dev demo-helm  
+
+# Major Version upgrade -- App version, image version and helm version changes
+# Version 6
+# Get current version of the release
+helm list --short
+helm upgrade -n ns-dev demo-helm guestbook
+
+#Delete all resources -- Optional
+helm uninstall -n ns-dev demo-helm
+kubectl delete pvc -n ns-dev mongodb-pvc
